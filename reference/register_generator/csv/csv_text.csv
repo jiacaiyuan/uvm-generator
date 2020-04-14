@@ -1,0 +1,9 @@
+NAME,ADDR,TYPE
+abc _0,  0x0,Rc
+slave_1,  0x04,RW
+alave_2,  0x08,RW
+slave_3,  0xc,WO
+slave_4,  16,RC
+slave_5,  18,
+slave_6,  20,WR
+slave_7,  24,RW

@@ -1,0 +1,31 @@
+`ifndef {{ module.upper() }}_MASTER_INTERFACE_SVI
+`define {{ module.upper() }}_MASTER_INTERFACE_SVI
+
+interface {{ module }}_master_interface();
+  // Signal
+  logic {{ module }}_clk;
+  
+  // Clocking block
+  clocking drv_cb @(posedge {{ module }}_clk);
+    default input #`{{ module.upper() }}_MASTER_SETUP_TIME output #`{{ module.upper() }}_MASTER_HOLD_TIME;
+  endclocking
+
+  clocking mon_cb @(posedge {{ module }}_clk);
+    default input #`{{ module.upper() }}_MASTER_SETUP_TIME output #`{{ module.upper() }}_MASTER_HOLD_TIME;
+  endclocking
+
+  // Modport
+  modport drv_mp (
+  );
+
+  modport mon_mp (
+  );
+
+  // Utils
+  task wait_cycle();
+    @(posedge {{ module }}_clk);
+  endtask
+
+endinterface
+
+`endif

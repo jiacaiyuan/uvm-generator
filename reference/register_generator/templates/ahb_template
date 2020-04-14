@@ -1,0 +1,277 @@
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// Abstract : AMBA AHB-lite slave, support 4 32-bit register read and write,
+//            each register can be accessed by byte, half word or word.
+//            The example slave always output ready and OKAY response to the master
+//            slave is always ready and response is always OKAY.
+//NAME : {{ip_name}}
+//CONFIG: ADDR_WIDTH:{{addr_width}}  DATA_WIDTH:{{data_width}}  REG_WIDTH:{{reg_width}}
+{% for item in items-%}
+//REG_NAME: {{item.reg_name}}  REG_TYPE: {{item.type}}
+{% endfor-%}
+//-----------------------------------------------------------------------------
+module {{ip_name}} 
+ (
+	input  wire                  HCLK,       // Clock
+	input  wire                  HRESETn,    // Reset
+	// AHB connection to master
+	input  wire                  HSELS,
+	input  wire  [{{addr_width-1}}:0] HADDRS,
+	input  wire  [1:0]           HTRANSS,
+	input  wire  [2:0]           HSIZES,
+	input  wire                  HWRITES,
+	input  wire                  HREADYS,
+	input  wire  [{{data_width-1}}:0] HWDATAS,
+
+	output wire                  HREADYOUTS,
+	output wire                  HRESPS,
+	output reg   [{{data_width-1}}:0] HRDATAS);
+  
+  	reg		read_en;
+	reg 	write_en;
+	assign HREADYOUTS  = 1'b1;  // slave always ready
+    assign HRESPS      = 1'b0;  // OKAY response from slave
+	wire                   update_read_req;    // To update the read enable register
+    wire                   update_write_req;   // To update the write enable register
+	wire                   trans_req= HREADYS & HSELS & HTRANSS[1];// transfer request issued only in SEQ and NONSEQ status and slave is selected and last transfer finish
+	wire                   ahb_read_req  = trans_req & (~HWRITES);// AHB read request
+	wire                   ahb_write_req = trans_req &  HWRITES;  // AHB write request
+	assign  update_read_req = ahb_read_req | (read_en & HREADYS); // Update read enable control if
+                                 //  1. When there is a valid read request
+                                 //  2. When there is an active read, update it at the end of transfer (HREADY=1)
+    assign  update_write_req = ahb_write_req |( write_en & HREADYS);  // Update write enable control if
+                                 //  1. When there is a valid write request
+                                 //  2. When there is an active write, update it at the end of transfer (HREADY=1)
+	{% set byte=(reg_width/8) | int %}
+	reg  	[{{byte-1}}:0]             byte_strobe; // registered output for byte strobe
+    reg	    [{{byte-1}}:0]             byte_strobe_nxt; // next state for byte_strobe_reg
+	reg     [31:0]  		  addr;            // address signal, registered
+	// Data register
+	{% for item in items -%}
+		reg     [{{reg_width-1}}:0]            {{item.reg_name}};
+	{% endfor-%}
+	// byte strobe signal
+    //-----------------------------------------------------------
+    // Module logic start
+    //----------------------------------------------------------
+	{% for i in range(0,8) -%}
+		{% if (2**i)*8==reg_width -%}
+		 {% set addr_decode_bit=i -%}
+		{% else -%}
+		 {% set addr_decode_bit=0 -%}
+		{% endif -%}
+	{% endfor -%}
+   always @(HSIZES or addr)
+   begin	
+	{% for i in range(0,(addr_decode_bit)) -%}
+			{% if i==0 -%}
+				if (HSIZES == 3'd0)    //1byte
+       begin
+	    case(addr[{{addr_decode_bit-1}}:0])
+			{% for j in range(0,(byte)) -%}
+			{{addr_decode_bit}}'d {{j}}:byte_strobe_nxt= {{byte}}'b {% for k in range(0,(byte)) %}{% if k<(byte-(j*2**i)) and (k)>=(byte-((j+1)*2**i)) %}1{% else %}0{% endif %}{% endfor %};
+		    {%if loop.last-%} 
+		   default: byte_strobe_nxt = {{byte}}'d0;
+         endcase
+		end	
+			{% endif -%}
+			{% endfor -%}
+		{% else -%}
+				 else if (HSIZES == 3'd{{i}})  //{{2**i}}byte
+		begin
+		  case(addr[{{addr_decode_bit-1}}:0])
+				{% for j in range(0,(reg_width)//2**(i+3)) -%}
+			{{addr_decode_bit}}'d {{2*j*2**(i-1)}}:byte_strobe_nxt= {{byte}}'b {% for k in range(0,(byte)) %}{% if k<(byte-(j*2**i)) and (k)>=(byte-((j+1)*2**i)) %}1{% else %}0{% endif %}{% endfor %};
+				{%if loop.last-%}
+			default: byte_strobe_nxt = {{byte}}'b0;
+		  endcase
+		end	
+				{% endif-%}
+				{% endfor -%}
+		{% endif %}
+		{%if loop.last-%} 
+		else //{{reg_width//8}}byte
+        begin
+           byte_strobe_nxt = {({{byte}}){1'b1}};
+        end
+   end
+			{% endif -%}
+	{% endfor -%}
+  always @(posedge HCLK or negedge HRESETn)
+  begin
+    if (~HRESETn)
+      begin
+		read_en <= 1'b0;
+		write_en <= 1'b0;
+      end
+	else if (update_read_req)
+      begin
+        read_en  <= ahb_read_req;
+      end
+	else if (update_write_req)
+	  begin
+	    write_en  <= ahb_write_req;
+	  end
+	  
+  end
+  
+  // Address signal registering, to make the address and data active at the same cycle
+  always @(posedge HCLK or negedge HRESETn)
+  begin
+    if (~HRESETn)
+      addr <= {({{addr_width}}){1'b0}}; //default address 0 is selected
+    else if (trans_req)
+      addr <= HADDRS[{{data_width-1}}:0];
+  end
+   
+   always @(posedge HCLK or negedge HRESETn)
+  begin
+    if (~HRESETn)
+      byte_strobe <= {({{byte}}){1'b0}};
+    else if (update_read_req|update_write_req)
+      byte_strobe  <= byte_strobe_nxt;
+  end
+  
+	always @(posedge HCLK or negedge HRESETn)
+     begin
+      if (~HRESETn)
+       begin
+	     {% for item in items -%} 
+		  {{item.reg_name}} <={{reg_width}}'d0;// Reset data to 0x00000000
+		 {%endfor-%}
+		end
+     else if (write_en)
+      begin
+	 {% for item in items if (item.type=="RW" or item.type=="WO")-%}
+		{%if loop.first -%}
+			  case(addr[{{addr_width-1}}:{{addr_decode_bit}}])
+		{%endif%}	  
+	  {% for i in range(0,reg_width,8)-%}
+		{%if loop.first -%}
+		{{addr_width-addr_decode_bit}}'d{{item.order}}:
+		begin
+		{%endif-%}
+		if (byte_strobe[{{loop.index0}}])
+            {{item.reg_name}}[ {{i+7}}:{{i}}] <= HWDATAS[ {{i+7}}: {{i}}];
+			{%if loop.last-%} 
+		   end
+		    {%endif-%}
+	  {%endfor-%}
+	   {%if loop.last-%} 
+		endcase
+	 end
+	   {%endif-%}
+	 {%endfor%}
+	 {% for item in items if (item.type=="RC")-%}
+		{%if loop.first -%}
+	 else if(read_en)
+	   begin
+			  case(addr[{{addr_width-1}}:{{addr_decode_bit}}])
+		{%endif%}	  
+	  {% for i in range(0,reg_width,8)-%}
+		{%if loop.first -%}
+		{{addr_width-addr_decode_bit}}'d{{item.order}}:
+		begin
+		{%endif-%}
+		if (byte_strobe[{{loop.index0}}])
+            {{item.reg_name}}[ {{i+7}}:{{i}}] <= HWDATAS[ {{i+7}}: {{i}}];
+			{%if loop.last-%} 
+		   end
+		    {%endif-%}
+	  {%endfor-%}
+	   {%if loop.last-%} 
+		endcase
+	 end
+	   {%endif-%}
+	 {%endfor%}
+	end
+	
+	//register read
+always @ (read_en or addr {% for item in items -%} or {{item.reg_name}} {% endfor %} )
+ begin
+	if(!HRESETn)
+	begin
+		HRDATAS <={{data_width}}'d0;
+	end
+	else
+	begin
+		if(read_en)
+		begin
+	 {% for item in items if (item.type=="RW" or item.type=="RO")-%}
+		{%if loop.first -%}
+			  case(addr[{{addr_width-1}}:{{addr_decode_bit}}])
+		{%endif%}	
+		{{addr_width-addr_decode_bit}}'d{{item.order}} :  HRDATAS <={{item.reg_name}}[{{data_width-1}}:0];
+	   {%if loop.last-%} 
+	            default: HRDATAS <= {{data_width}}'d0;   // default
+			endcase
+	   {%endif-%}
+	 {% endfor-%}
+		end	
+		else
+		begin
+  	 		 HRDATAS <= {{data_width}}'d0; // default
+	 	end
+	end
+end
+
+{% if (assertion==True) -%}
+//-----------------------------------------------------------
+  //Module logic end
+  //----------------------------------------------------------
+`ifdef ARM_AHB_ASSERT_ON
+
+ `include "std_ovl_defines.h"
+  // ------------------------------------------------------------
+  // Assertions
+  // ------------------------------------------------------------
+
+  wire     ovl_trans_req = HREADYS & HSELS & HTRANSS[1];
+
+   // Check the reg_write_en signal generated
+   assert_next
+    #(`OVL_ERROR, 1,1,0,
+      `OVL_ASSERT,
+      "Error! register write signal was not generated! "
+      )
+    u_ovl_ahb_eg_slave_reg_write
+    (.clk         ( HCLK ),
+     .reset_n     (HRESETn),
+     .start_event ((ovl_trans_req & HWRITES)),
+     .test_expr   (reg_write_en == 1'b1)
+     );
+
+
+  // Check the reg_read_en signal generated
+  assert_next
+    #(`OVL_ERROR, 1,1,0,
+      `OVL_ASSERT,
+      "Error! register read signal was not generated! "
+      )
+    u_ovl_ahb_eg_slave_reg_read
+    (.clk         ( HCLK ),
+     .reset_n     (HRESETn),
+     .start_event ((ovl_trans_req & (~HWRITES))),
+     .test_expr   (reg_read_en == 1'b1)
+     );
+
+
+
+  // Check register read and write operation won't assert at the same cycle
+    assert_never
+     #(`OVL_ERROR,
+       `OVL_ASSERT,
+       "Error! register read and write active at the same cycle!")
+    u_ovl_ahb_eg_slave_rd_wr_illegal
+     (.clk(HCLK),
+      .reset_n(HRESETn),
+      .test_expr((reg_write_en & reg_read_en))
+      );
+
+`endif
+{%endif-%}
+ //------------------------------------------------------------------------------
+ // module logic end
+ //------------------------------------------------------------------------------
+
+ endmodule
