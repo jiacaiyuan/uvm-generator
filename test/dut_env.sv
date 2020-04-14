@@ -16,7 +16,7 @@ class dut_env extends uvm_env;
 
 	dut_bus_agent bus_agt; 
 	bus_agent_config bus_agt_cfg;
-	UART bus_rgm;
+	bus_ip bus_rgm;
 	bus_ral_config bus_ral_cfg;
 	dut_bus_reg_adapter bus_adp;
 
@@ -54,12 +54,12 @@ function void dut_env::build_phase(uvm_phase phase);
 	`uvm_info(get_name(),"Build Phase is Called",UVM_LOW)
 	env_cfg=new("env_cfg");
 
-	//bus UART-RAL
+	//bus bus_ip-RAL
 	bus_agt=dut_bus_agent::type_id::create("bus_agt",this);
 	bus_agt_cfg=new("bus_agt_cfg");
 	bus_agt_cfg.is_active=UVM_ACTIVE;
 	uvm_config_db#(bus_agent_config)::set(this,"bus_agt","agt_cfg",bus_agt_cfg);
-	bus_rgm=UART::type_id::create("bus_rgm",this);
+	bus_rgm=bus_ip::type_id::create("bus_rgm",this);
 	bus_rgm.build();
 	bus_rgm.lock_model();
 	bus_ral_cfg=new("bus_ral_cfg");
@@ -104,7 +104,7 @@ function void dut_env::connect_phase(uvm_phase phase);
 	master_agt.moi_port.connect(master_fifo.analysis_export);
 	slave_agt.moi_port.connect(slave_fifo.analysis_export);
 
-	//UART-RAL
+	//bus_ip-RAL
 	bus_rgm.default_map.set_sequencer(bus_agt.bus_sqr,bus_adp);
 	bus_rgm.default_map.set_auto_predict();
 	

@@ -1,0 +1,119 @@
+addrmap bus_ip 
+{
+	name = "BUS_IP_RGM";
+	desc = "Register description of MPS2 WATCHDOG";
+	default regwidth = 32;
+	default sw = rw;
+	default hw = rw;
+
+	reg
+	{
+		name = "Load Register";
+		field 
+		{
+			desc="contains the value from which the counter is to decrement";
+		} LOAD[31:0] = 0;
+	} LOAD @ 0x0;
+
+	reg 
+	{
+
+		name = "Value Register";
+		field 
+		{		
+			sw =r;
+			hw =rw;
+			desc = "gives the current value of the decrementing counter.";
+		} VALUE[31:0] = 0;
+	} VALUE @ 0x4;
+	
+	reg 
+	{
+		name = "Control Register";
+		field
+		{
+			desc="Reserved, read UNDEFINED, must read as 0s.";
+		} RESERVED[31:2]=0 ;
+		field 
+		{
+			desc="Enable watchdog reset output, WDOGRES.Acts as a mask for the reset output. Set to 1 to enable the reset, or to
+0 to disable the reset";
+		} RESEN[1:1] = 0;
+		
+		field 
+		{
+			desc="Enable the interrupt event, WDOGINT. Set to 1 to enable the counter and the interrupt, or to 0 to disable the
+counter and interrupt. Reloads the counter from the value in WDOGLOAD when the interrupt is enabled, after
+previously being disabled";
+		} INTEN[0:0] = 0;
+	} CTRL @ 0x8;
+
+	reg
+	{
+		name="Clear Interrupt Register";
+		field{sw =w; hw =rw;} INTCLR[31:0]=0;
+	}INTCLR @ 0xc;
+	
+	reg
+	{
+		name="Raw Interrupt Status Register";
+		field{desc="Reserved, read UNDEFINED, must read as 0s.";}RESERVED[31:1]=0;
+		field
+		{
+			sw =r;
+			hw =rw;
+			desc="Raw interrupt status from the counter.";
+		} RAWINT[0:0]=0;
+	}RAWINTSTAT @0x010;
+	
+	reg
+	{
+		name="Interrupt Status Register";
+		field{desc="Reserved, read UNDEFINED, must read as 0s.";}RESERVED[31:1]=0;
+		field
+		{
+			sw =r;
+			hw =r;
+			desc="Enabled interrupt status from the counter.";
+		} WATINT[0:0]=0;
+	}MASKINTSTAT @0x014;
+	
+//	reg UNUSED{ field{} RESERVED[31:0]=0;};
+	
+//	UNUSED RESERVED0[762];
+	
+	reg
+	{
+		name="Lock Register";
+		field{desc="Enable write access to all other registers by writing 0x1ACCE551. Disable write access by
+writing any other value";} ENAWRITE[31:1]=0;
+		field{desc="Register write enable status";} ENASTAT[0:0]=0;
+	}LOCK @0xC00;
+
+//	UNUSED RESERVED1[191];
+
+	reg
+	{
+		name="Integration Test Control Register";
+		field{desc="Reserved, read UNDEFINED, must read as 0s.";} RESERVED[31:1]=0;
+		field{desc="When set to 1, places the watchdog into integration test mode.";} ITME[0:0]=0;
+	}ITCR @0xF00;
+	
+	reg 
+	{
+		name="Integration Test Output Set Register";
+		field{desc="Reserved, read UNDEFINED, must read as 0s.";} RESERVED[31:2]=0;
+		field
+		{
+			hw=rw;
+			sw=w;
+			desc="Value output on WDOGINT when in integration test mode.";
+		} WDOGINT[1:1]=0;
+		field
+		{
+			hw=rw;
+			sw=w;
+			desc="Value output on WDOGRES when in integration test mode.";
+		} WDOGRES[0:0]=0;
+	}ITOP @0xF04;
+};

@@ -28,17 +28,6 @@ for i in range(len(agent_list)):
                                              dut_parse.lsb_list)
     agent_list[i].ral.format_reg()
 
-#-------------------------------------
-#ral 
-#-------------------------------------
-bus_reg=REGISTER()
-bus_reg.ral_name="UART"
-bus_reg.auto_predict=True  #initial config 
-#bus_reg.auto_predict=False
-bus_reg.ral_content=open("UART_uvm.sv","r").read()
-for i in range(len(agent_list)):
-    if agent_list[i].name=="bus":
-        agent_list[i].ral=bus_reg
 
 #-------------------------------------
 #display 

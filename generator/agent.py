@@ -22,6 +22,10 @@ class REGISTER(object):
     
     def format_reg(self):
         if self.ral_file!="":
+            if isinstance(self.ral_file,str):
+                tmp=[]
+                tmp.append(self.ral_file)
+                self.ral_file=tmp
             rdl=RDL()
             rdl.read_rdl(self.ral_file)
             self.ral_name=rdl.listener.ip_name

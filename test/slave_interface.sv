@@ -4,7 +4,7 @@
 //E-mail: yuan861025184@163.com
 //Contents:dut_slave_interface
 //***** ***** ***** *****  *****  *****  *****  *****  *****  *****  ***** 
-interface dut_slave_inf#()(input logic  PCLK,input logic  PCLKG,input logic  PRESETn);
+interface dut_slave_inf#(int ADDR_WIDTH=32,int DATA_WIDTH=32)();
 
 logic  TXD;
 logic [7:0] data_wrt;
@@ -16,9 +16,6 @@ logic [7:0] addr_rd;
 
 
 modport dut_slave_dut(
-input PCLK,
-input PCLKG,
-input PRESETn,
 output TXD,
 output data_wrt,
 output addr_wrt,
@@ -29,9 +26,6 @@ input addr_rd
 );
 
 modport dut_slave_driver(
-input  PCLK,
-input  PCLKG,
-input  PRESETn,
 input TXD,
 input data_wrt,
 input addr_wrt,
@@ -42,9 +36,6 @@ output addr_rd
 );
 
 modport dut_slave_monitor(
-input PCLK,
-input PCLKG,
-input PRESETn,
 input TXD,
 input data_wrt,
 input addr_wrt,

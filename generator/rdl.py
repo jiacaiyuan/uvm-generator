@@ -25,6 +25,7 @@ class GetRegListener(RDLListener):
     def __init__(self):
         self.indent = 0
         self.ip_name =""
+        #self.ral_name=""
         self.reg_name=[]
         self.reg_width=[]#each register width
         self.reg_addr=[]#each register width

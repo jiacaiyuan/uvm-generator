@@ -4,7 +4,7 @@
 //E-mail: yuan861025184@163.com
 //Contents:dut_master_interface
 //***** ***** ***** *****  *****  *****  *****  *****  *****  *****  ***** 
-interface dut_master_inf#()(input logic  PCLK,input logic  PCLKG,input logic  PRESETn);
+interface dut_master_inf#()();
 
 logic  RXD;
 logic [31:0] data_st;
@@ -17,9 +17,6 @@ logic [31:0] addr_ld;
 
 
 modport dut_master_dut(
-input PCLK,
-input PCLKG,
-input PRESETn,
 input RXD,
 input data_st,
 input addr_st,
@@ -31,9 +28,6 @@ output addr_ld
 );
 
 modport dut_master_driver(
-input  PCLK,
-input  PCLKG,
-input  PRESETn,
 output RXD,
 output data_st,
 output addr_st,
@@ -45,9 +39,6 @@ input addr_ld
 );
 
 modport dut_master_monitor(
-input PCLK,
-input PCLKG,
-input PRESETn,
 input RXD,
 input data_st,
 input addr_st,
