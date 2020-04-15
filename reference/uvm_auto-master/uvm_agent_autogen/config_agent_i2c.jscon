@@ -1,6 +1,0 @@
-
-{
-    "agent_name": "i2c",
-    "itf": ["sys", "i2c"],
-    "seq_name": "data"
-}

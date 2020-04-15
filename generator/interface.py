@@ -177,7 +177,7 @@ class INTERFACE(object):
                 self.update_param(sig.msb,global_param_dict)
             if not lsb_flag:
                 self.update_param(sig.lsb,global_param_dict)
-            if re.search(r'((clock)|(clk)|(rst)|(reset))',self.name_list[i].lower()):
+            if re.search(r'((clock)|(clk)|(rst)|(reset))',self.name_list[i].lower()) and self.direction_list[i]==0:#clk rst input
                 self.clk_rst.append(sig)
             else:
                 self.port_list.append(sig)

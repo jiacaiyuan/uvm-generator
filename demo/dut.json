@@ -1,5 +1,5 @@
 {
-"TOP_MODULE":"./dut.v",
+"TOP_MODULE":"./demo/dut.v",
 "NAME":"dut",
 "AGENTS":
 {
@@ -19,7 +19,7 @@
 			"RESPONSE":"True",
 			"RAL":
 			{
-				"SystemRDL":"./bus_reg_model.rdl",
+				"SystemRDL":"./demo/bus_reg_model.rdl",
 				"NAME":"UART",
 				"AUTO_PREDICT":"True"
 			}

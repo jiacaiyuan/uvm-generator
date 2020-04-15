@@ -12,7 +12,7 @@ class REGISTER(object):
         self.ral_file="" #ral_file and ral_name must has one
         self.ral_name="" #class name in uvm
         self.auto_predict=True#when ral==True,default auto_predict #False:explicit pedict
-        self.ral_content=""
+        self.rdl=RDL()
     
     def render_reg(self):
         if self.ral_name!="": #maybe change to self.ral_name!="" and self.ral_file!=""
@@ -26,9 +26,8 @@ class REGISTER(object):
                 tmp=[]
                 tmp.append(self.ral_file)
                 self.ral_file=tmp
-            rdl=RDL()
-            rdl.read_rdl(self.ral_file)
-            self.ral_name=rdl.listener.ip_name
+            self.rdl.read_rdl(self.ral_file)
+            self.ral_name=self.rdl.listener.ip_name
         return 
 
 
@@ -50,7 +49,10 @@ class AGENT(object):
         if self.name=="":
             return {}
         else:
-            return dict(name=self.name,ral=self.ral.render_reg(),is_active=self.is_active,response=self.response)
+            return dict(name=self.name,ral=self.ral.render_reg(),is_active=self.is_active,response=self.response,
+                        clk_rst=self.interface.render_signals(self.interface.clk_rst),
+                        port_list=self.interface.render_signals(self.interface.port_list),
+                        param_list=self.interface.render_param())#add later
 
     def display_agt(self):
         print("-------------------------------")

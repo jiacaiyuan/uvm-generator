@@ -14,7 +14,6 @@ from generator.debug_log import *
 from generator.base_func import *
 from systemrdl import RDLCompiler,RDLListener,RDLWalker,RDLCompileError
 from systemrdl.node import FieldNode
-from ralbot.html import HTMLExporter
 from ralbot.uvmgen import uvmGenExporter
 from ralbot.ipxact import IPXACTExporter
 #this_dir=os.path.dirname(os.path.realpath(__file__))
@@ -123,15 +122,6 @@ class RDL(object):
         walker = RDLWalker(unroll=True)
         walker.walk(self.root, self.listener)
         self.listener.do_stats()#to process the information of SystemRDL file
-
-    #gen the html file according the SystemRDL file has been elaborate
-    @DEBUG()
-    def gen_html(self,outdir=""):
-        #md=markdown.Markdown(extensions=['admonition'])
-        INFO("gen_html: "+"Generate HTML File")
-        md = markdown.Markdown()
-        html=HTMLExporter(markdown_inst=md)
-        html.export(self.root,outdir,home_url="")
 
 
     #gen the uvm file according the SystemRDL file has been elaborate
