@@ -9,7 +9,7 @@
 			"PARAMETER":{"ADDR_WIDTH":32,"DATA_WIDTH":32},
 			"PORTS":
 				{
-				"NAME":["PCLK","PCLKG","PRESETn","PSEL","pAddr","penable","PWRite","PWDATA","prdata","pready","pslverr"],
+				"NAME":["PClk","PCLKG","PRESETn","PSEL","pAddr","penable","PWRite","PWDATA","prdata","pready","pslverr"],
 				"DIRECTION":[0,0,0,0,0,0,0,0,1,1,1],
 				"MSB":[0,0,"0","0x0","ADDR_WIDTH<<2-1","0X0",0,"DATA_WIDTH-1",31,0,0],
 				"LSB":[0,0,"0","0x0","2","0X0",0,0,0,0,0]
@@ -29,7 +29,7 @@
 			{
 			"PORTS":
 				{
-				"NAME":["PCLK","PCLKG","PRESETn","RXD","data_st","addr_st","control","request","valid","data_ld","addr_ld"],
+				"NAME":["PClk","PCLKG","PRESETn","RXD","data_st","addr_st","control","request","valid","data_ld","addr_ld"],
 				"DIRECTION":[0,0,0,0,0,0,0,1,1,1,1],
 				"MSB":[0,0,0,0,31,31,7,0,2,31,31],
 				"LSB":[0,0,0,0,0,0,0,0,0,0,0]
@@ -43,7 +43,7 @@
 			{
 			"PORTS":
 				{
-				"NAME":["PCLK","PCLKG","PRESETn","TXD","data_wrt","addr_wrt","regrant","confirm","data_rd","addr_rd"],
+				"NAME":["PClk","PCLKG","PRESETn","TXD","data_wrt","addr_wrt","regrant","confirm","data_rd","addr_rd"],
 				"DIRECTION":[0,0,0,1,1,1,1,0,0,0],
 				"MSB":[0,0,0,0,7,7,0,3,7,7],
 				"LSB":[0,0,0,0,0,0,0,0,0,0]
