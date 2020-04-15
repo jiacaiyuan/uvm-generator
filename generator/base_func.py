@@ -1,9 +1,10 @@
 #***** ***** ***** ***** ***** ***** ***** ***** ***** ***** *****
 #Author:   jcyuan
 #E-Mail:   yuan861025184@163.com
-#Project:  Design Platform for RTL development
-#Function: some base function in the design platform
+#Project:  UVM Auto Generator
+#Function: some base function about directory and string process
 #***** ***** ***** ***** ***** ***** ***** ***** ***** ***** *****
+
 import os
 import sys
 

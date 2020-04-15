@@ -1,12 +1,15 @@
 #***** ***** ***** ***** ***** ***** ***** ***** ***** ***** *****
 #Author:   jcyuan
 #E-Mail:   yuan861025184@163.com
-#Project:  UVM-Generator
-#Function: Functions for debug information generation
+#Project:  UVM Auto Generator
+#Function: Functions for interface info process
 #***** ***** ***** ***** ***** ***** ***** ***** ***** ***** *****
+
+import re
 from generator.debug_log import *
 from generator.base_func import *
-import re
+
+#process the bit info 
 def format_bit(bit):
     if isinstance(bit,int):
         bit=bit
@@ -23,6 +26,7 @@ def format_bit(bit):
         bit=str(bit)
     return bit
 
+#process the list bit info 
 def format_list(list_to_form):
     for i in range(len(list_to_form)):
         list_to_form[i]=format_bit(list_to_form[i])
@@ -38,7 +42,7 @@ class SIGNAL(object):
         self.bits=[]
         self.status=[]
 
-
+    #check the bit info about msb and lsb has parameter is exists
     def check_bit(self,bit,param_dict={}):
         if isinstance(bit,int) or (isinstance(bit,str) and bit.isdigit()) or (isinstance(bit,str) and re.match("0(x|X)[0-9a-fA-F]",bit)):
             return True
@@ -52,6 +56,7 @@ class SIGNAL(object):
                 WARNING("check_bit: "+self.name+" Bit:"+bit)
                 return False
 
+    #check the signal 
     def check_sig(self,param_dict={}):
         if self.name=="":
             ERROR("check_sig: "+"Signal Name Illegal")
@@ -60,13 +65,6 @@ class SIGNAL(object):
         msb_flag=self.check_bit(self.msb,param_dict)
         lsb_flag=self.check_bit(self.lsb,param_dict)
         return(msb_flag,lsb_flag)
-
-
-
-
-
-
-
 
 
     def display_sig(self):
@@ -96,20 +94,22 @@ class INTERFACE(object):
 
 
 
-
+    #update the parameter that has been transfer new or miss parameter 
     def update_param(self,bits,global_param_dict):
         for key in list(self.parameter.keys()):
             if key in bits:
                 return
             else:
                 continue
-        for key in list(global_param_dict.keys()):
+        for key in list(global_param_dict.keys()):#add new parameter 
             if key in bits:
                 self.parameter[key]=global_param_dict[key]
             else:
                 continue
         return
 
+    #the config interface maybe has some error, check and update according to the dut-rtl info 
+    @DEBUG()
     def check_update_list(self,glb_name_list=[],glb_direction_list=[],glb_msb_list=[],glb_lsb_list=[]):
         if len(self.name_list)==0:
             self.name_list=glb_name_list
@@ -117,29 +117,29 @@ class INTERFACE(object):
             self.msb_list=glb_msb_list
             self.lsb_list=glb_lsb_list
         else:
-            #update length
+            #update length #the length error 
             update_direction=False
             update_msb=False
             update_lsb=False
             if len(self.name_list)!=len(self.direction_list):
-                ERROR("check_update_list: "+"Name Num!= Direction Num "+str(self.name_list))
+                WARNING("check_update_list: "+"Name Num!= Direction Num "+str(self.name_list))
                 self.direction_list=[]
                 update_direction=True
                 for i in range(len(self.name_list)):
                     self.direction_list.append(0)#default input
             if len(self.name_list)!=len(self.msb_list):
-                ERROR("check_update_list: "+"Name Num!= MSB Num "+str(self.name_list))
+                WARNING("check_update_list: "+"Name Num!= MSB Num "+str(self.name_list))
                 self.msb_list=[]
                 update_msb=True
                 for i in range(len(self.name_list)):
                     self.msb_list.append(0)#default 0
             if len(self.name_list)!=len(self.lsb_list):
-                ERROR("check_update_list: "+"Name Num!= Direction Num "+str(self.name_list))
+                WARNING("check_update_list: "+"Name Num!= Direction Num "+str(self.name_list))
                 self.lsb_list=[]
                 update_lsb=True
                 for i in range(len(self.name_list)):
                     self.lsb_list.append(0)#default 0
-            #update value
+            #update value from dut info 
             for i in range(len(glb_name_list)):
                 if glb_name_list[i] in self.name_list:
                     if update_direction:
@@ -162,23 +162,24 @@ class INTERFACE(object):
 
 
 
-
-
+    #process the self interface 
+    @DEBUG()
     def format_inf(self,global_param_dict={},glb_name_list=[],glb_direction_list=[],glb_msb_list=[],glb_lsb_list=[]):
+        INFO("format_inf: "+"Process The Interface Info")
         self.check_update_list(glb_name_list,glb_direction_list,glb_msb_list,glb_lsb_list)
         for i in range(min(len(self.name_list),len(self.direction_list),len(self.msb_list),len(self.lsb_list))):
-            sig=SIGNAL()
+            sig=SIGNAL()#sort and process the port 
             sig.name=self.name_list[i]
             sig.direction=format_bit(self.direction_list[i])
             sig.msb=format_bit(self.msb_list[i])
             sig.lsb=format_bit(self.lsb_list[i])
             (msb_flag,lsb_flag)=sig.check_sig(self.parameter)
             if not msb_flag:
-                self.update_param(sig.msb,global_param_dict)
+                self.update_param(sig.msb,global_param_dict)#update the param 
             if not lsb_flag:
                 self.update_param(sig.lsb,global_param_dict)
             if re.search(r'((clock)|(clk)|(rst)|(reset))',self.name_list[i].lower()) and self.direction_list[i]==0:#clk rst input
-                self.clk_rst.append(sig)
+                self.clk_rst.append(sig)#diff the port about clock and reset 
             else:
                 self.port_list.append(sig)
 
@@ -189,8 +190,9 @@ class INTERFACE(object):
     
     
     
-
+    @DEBUG()
     def render_param(self):
+        INFO("render_param: "+"Process The Interface Parameter Info")
         param_rend_list=[]
         for k in list(self.parameter.keys()):
             if isinstance(self.parameter[k],int):
@@ -202,11 +204,13 @@ class INTERFACE(object):
             elif isinstance(self.parameter[k],str): #just string
                 param_rend_list.append(dict(type="string",key=str(k),value="\""+str(self.parameter[k])+"\""))
             else:
-                ERROR("render_param: "+"Parameter Illegal")
+                WARNING("render_param: "+"Parameter Illegal "+str(k)+":"+str(self.parameter[k]))
         return param_rend_list
 
 
+    @DEBUG()
     def render_signals(self,sig_list):
+        INFO("render_signals: "+"Process The Interface Signals Info")
         render_sig_list=[]
         for port in sig_list:
             if port.msb==port.lsb:
@@ -220,7 +224,7 @@ class INTERFACE(object):
             elif port.direction==2:
                 render_sig_list.append(dict(direction="inout",name=port.name,bit_info=bit_str))
             else:
-                ERROR("render_param: "+"Clk or Rst Port Illegal")
+                WARNING("render_param: "+"Signal Port Illegal "+port.name+" "+port.direction+" "+port.msb+" "+port.lsb)
         return render_sig_list
 
     def display_inf(self):

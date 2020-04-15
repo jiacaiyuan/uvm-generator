@@ -1,3 +1,10 @@
+#***** ***** ***** ***** ***** ***** ***** ***** ***** ***** *****
+#Author:   jcyuan
+#E-Mail:   yuan861025184@163.com
+#Project:  UVM Auto Generator
+#Function: Functions for integration
+#***** ***** ***** ***** ***** ***** ***** ***** ***** ***** *****
+
 import re
 import shutil
 from copy import deepcopy
@@ -36,45 +43,44 @@ class INTEGRATION(object):
         
         #order: rtl,sequence,agent,reg,env,testcase,sim
 
+    #parse the config file and dut file 
+    @DEBUG()
     def parse(self,cfg_file):
+        INFO("parse: "+"All Available Info")
         if cfg_file!="":
             self.cfg_file=cfg_file
         self.cfg_file=get_abs_dir(del_content(str(self.cfg_file)))
         if not path_exists(self.cfg_file):
-            ERROR("------------------------")
-            exit()
+            CRITICAL("parse: "+"Can't Find Config File")
+            INFO("parse: "+"Default Flow")
+            agt=AGENT()
+            agt.name="AUTO_AGENT"
+            self.agent_list.append(agt)
+            self.render_agent_list.append(agt.render_agent())
+            return
         self.jscfg.parse(self.cfg_file)
         self.dut_parse.parse(self.jscfg.top_module,self.jscfg.top_name)
         if self.dut_parse.module_name!="":
             self.dut_name=self.dut_parse.module_name
         else:
-            self.dut_name="AUTO_DUT"
+            self.dut_name="AUTO_DUT"#set auto name 
         self.agent_list=self.jscfg.agent_list
-        if len(self.agent_list)==0:
+        if len(self.agent_list)==0:#no agent config 
             agt=AGENT()
             agt.name="AUTO_AGENT"
             self.agent_list.append(agt)
-        for i in range(len(self.agent_list)):
+        for i in range(len(self.agent_list)):#format the info 
             self.agent_list[i].interface.format_inf(self.dut_parse.parameter,self.dut_parse.port_list,
                                              self.dut_parse.direction_list,self.dut_parse.msb_list,
                                              self.dut_parse.lsb_list)
             self.agent_list[i].ral.format_reg()
-        for agt in self.agent_list:
+        for agt in self.agent_list:#render
             self.render_agent_list.append(agt.render_agent())
         return
 
 
 
-
-
-
-
-
-
-
-
-
-    #change work directory
+    #change and build work directory
     @DEBUG()
     def chg_out_dir(self):
         if not path_exists(self.out_dir):
@@ -111,7 +117,7 @@ class INTEGRATION(object):
             os.mkdir("rtl")
         return
 
-
+    #rander the template base 
     def render_integrate_base(self,tmp,agent=AGENT()):
         if agent.ral.ral_name!="":
             UVM_RAL=True
@@ -131,30 +137,23 @@ class INTEGRATION(object):
         )
         return content
 
-
-
-
-
-
-
-
-
+    #fill the rtl and interface file 
+    @DEBUG()
     def fill_rtl(self):
         os.chdir(self.out_dir)
         os.chdir("rtl")
         if self.dut_parse.file_name!="":
-            shutil.copy( self.dut_parse.file_name,"./")
-        for agent in self.agent_list:
+            shutil.copy( self.dut_parse.file_name,"./")#copy rtl file 
+        for agent in self.agent_list:#gen the interface.sv
             content=self.render_integrate_base(self.inf_template,agent)
             with open("./"+str(agent.name)+str(self.inf_template).split(".")[0]+str(".sv"),"w") as fp:
                 fp.write(content)
         os.chdir(self.out_dir)
         return
 
-
-
-
-
+    
+    #fill the sequence sequence_cfg and transaction 
+    @DEBUG()
     def fill_sequence(self):
         os.chdir(self.out_dir)
         os.chdir("sequence")
@@ -170,8 +169,8 @@ class INTEGRATION(object):
 
 
 
-
-
+    #fill the agent sv file 
+    @DEBUG()
     def fill_agents(self):
         for agent in self.agent_list:
             os.chdir(self.out_dir)
@@ -184,6 +183,8 @@ class INTEGRATION(object):
         os.chdir(self.out_dir)
         return
 
+    #fill the env sv file 
+    @DEBUG()
     def fill_env(self):
         os.chdir(self.out_dir)
         os.chdir("env")
@@ -195,7 +196,8 @@ class INTEGRATION(object):
         os.chdir(self.out_dir)
         return
 
-
+    #fill the testcase sv file 
+    @DEBUG()
     def fill_testcase(self):
         os.chdir(self.out_dir)
         os.chdir("testcase")
@@ -206,15 +208,17 @@ class INTEGRATION(object):
         os.chdir(self.out_dir)
         return
     
-    
-    
+
+    #fill the reg model base
     def fill_reg_base(self,agent):
         content=self.render_integrate_base(self.reg_adp_template,agent)
         agent.ral.rdl.gen_uvmral("./",str(agent.ral.ral_name)+"_uvm.sv")#generate the uvm-ral
         self.pkg_str=self.pkg_str+str("`include \""+str(agent.ral.ral_name)+"_uvm.sv"+"\"\n")
         agent.ral.rdl.gen_ipxact("./IPXACT",str(agent.ral.ral_name)+".xml")#generate the register-ipxact 
         return content
-    
+
+    #fill the reg model 
+    @DEBUG()
     def fill_reg(self):
         os.chdir(self.out_dir)
         uvm_list=[]
@@ -238,7 +242,8 @@ class INTEGRATION(object):
             else:
                 continue
 
-
+    #generate the pkg file 
+    @DEBUG()
     def gen_pkg(self):
         os.chdir(self.out_dir)
         os.chdir("sim")
@@ -248,6 +253,8 @@ class INTEGRATION(object):
         os.chdir(self.out_dir)
         return 
 
+    #generate the tb harness file 
+    @DEBUG()
     def gen_harness(self):
         os.chdir(self.out_dir)
         os.chdir("sim")
@@ -295,7 +302,8 @@ class INTEGRATION(object):
         os.chdir(self.out_dir)
         return
 
-
+    #generate the file list file 
+    @DEBUG()
     def gen_fil_list(self,fil_name="fil.lst"):
         string=""
         dir_list=["sequence"]
@@ -333,7 +341,8 @@ class INTEGRATION(object):
         os.chdir(self.out_dir)
         return
 
-
+    #generate the make file
+    @DEBUG()
     def gen_makefile(self):
         os.chdir(self.out_dir)
         os.chdir("sim")
@@ -350,19 +359,15 @@ VPD=+define+DUMP_VPD\nFSDB=+define+DUMP_FSDB
         os.chdir(self.out_dir)
         return
 
-
-
-
-
-
-
-
-
-
+    #run the flow
+    @DEBUG()
     def run_flow(self,cfg_file=""):
+        INFO("run_flow: "+"Parse Config & RTL File \n")
         self.parse(cfg_file)
+        INFO("run_flow: "+"Build Project Directory\n")
         self.chg_out_dir()
         self.build_dir()
+        INFO("run_flow: "+"UVM Project Auto Generate\n")
         self.fill_rtl()
         self.fill_sequence()
         self.fill_agents()
@@ -371,6 +376,7 @@ VPD=+define+DUMP_VPD\nFSDB=+define+DUMP_FSDB
         self.fill_testcase()
         self.gen_pkg()
         self.gen_harness()
+        INFO("run_flow: "+"Simulate File Generate\n")
         self.gen_fil_list()
         self.gen_makefile()
         return

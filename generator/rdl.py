@@ -1,8 +1,8 @@
 #***** ***** ***** ***** ***** ***** ***** ***** ***** ***** *****
 #Author:   jcyuan
 #E-Mail:   yuan861025184@163.com
-#Project:  Design Platform for RTL development
-#Function: for process the SystemRDL file in the platform
+#Project:  UVM Auto Generator
+#Function: for process the SystemRDL file and generate UVM-RAL
 #***** ***** ***** ***** ***** ***** ***** ***** ***** ***** *****
 
 import sys

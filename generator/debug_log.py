@@ -1,7 +1,7 @@
 #***** ***** ***** ***** ***** ***** ***** ***** ***** ***** *****
 #Author:   jcyuan
 #E-Mail:   yuan861025184@163.com
-#Project:  UVM-Generator
+#Project:  UVM Auto Generator
 #Function: Functions for debug information generation
 #***** ***** ***** ***** ***** ***** ***** ***** ***** ***** *****
 #NOTE:
