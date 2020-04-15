@@ -7,19 +7,29 @@ Copyright 2020, Jiacai Yuan
 What's UVM Generator
 ======================================================
 Fast Analysis DUT Verilog File
+
 Config JSON File to set module,agent,systemRDL info
+
 Auto Generate UVM Agents Env UVM-RAL Sequence Testcase 
+
 Auto Generate package fil.list Makefile
+
 Auto Verilog Instance 
+
 Auto Build Verify Directory
 
 Tools Using
 ======================================================
 Python>=3.0
+
 jinja2
+
 chardet
+
 SystemRDL-Compiler         [GitHub](https://github.com/SystemRDL/systemrdl-compiler)------has in the proj
+
 SystemRDL/RALBot-uvm       [GitHub](https://github.com/SystemRDL/RALBot-uvm)------has in the proj
+
 SystemRDL/RALBot-ipxact    [GitHub](https://github.com/SystemRDL/RALBot-ipxact)------has in the proj
 
 
@@ -27,9 +37,13 @@ SystemRDL/RALBot-ipxact    [GitHub](https://github.com/SystemRDL/RALBot-ipxact)-
 Usage
 ======================================================
 python3 top.py -h
--d     debug level from 0 to 4 
+
+-d     debug level from 0 to 4
+
 -l     debug log file
+
 -i     input json config file
+
 -o     ouput project directory
 
 
@@ -137,6 +151,7 @@ make demo
 Test
 ======================================================
 cd ./test
+
 make test
 
 
