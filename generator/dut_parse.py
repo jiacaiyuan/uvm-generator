@@ -32,6 +32,7 @@ class DUT_PARSE(object):
         if file_name!="":
             self.file_name=file_name
         elif self.file_name=="":
+            WARNING("pre_process: "+"No RTL Module File")
             return self.contents
         self.contents=open(self.file_name,'r').read()
         #delete all the comments

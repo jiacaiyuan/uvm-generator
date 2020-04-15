@@ -1,4 +1,4 @@
-module dut #(parameter ADDR_WIDTH=32 ,DATA_WIDTH=32)
+module dut #(parameter ADDR_WIDTH=32 ,parameter DATA_WIDTH=32)
 (
 //bus side
 input wire PClk,
