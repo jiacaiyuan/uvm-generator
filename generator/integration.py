@@ -30,7 +30,8 @@ class INTEGRATION(object):
         self.agt_template_list=["_agent_cfg.svh","_sequencer.svh","_driver.svh","_monitor.svh","_agent.svh"]
         self.reg_adp_template="_reg_adapter.svh"
         self.env_template_list=["_env_cfg.svh","_virtual_sequencer.svh","_env.svh"]
-        self.sequence_template_list=["_transaction.svh","_sequence_cfg.svh","_sequence_base.svh"]
+        self.sequence_template_list=["_transaction.svh","_sequence_base.svh"]
+        self.sequence_cfg_template="_sequence_cfg.svh"
         self.testcase_template="_base_test.svh"
         self.inf_template="_interface.svh"
         self.harness_template="_harness.svh"
@@ -157,6 +158,10 @@ class INTEGRATION(object):
     def fill_sequence(self):
         os.chdir(self.out_dir)
         os.chdir("sequence")
+        content=self.render_integrate_base(self.sequence_cfg_template)
+        with open("./"+str(self.dut_name)+str(self.sequence_cfg_template).split(".")[0]+str(".sv"),"w") as fp:
+            fp.write(content)
+        self.pkg_str=self.pkg_str+str("`include \""+str(self.dut_name)+str(self.sequence_cfg_template).split(".")[0]+str(".sv")+"\"\n")
         for agent in self.agent_list:
             for t in self.sequence_template_list:
                 content=self.render_integrate_base(t,agent)
@@ -192,7 +197,10 @@ class INTEGRATION(object):
             content=self.render_integrate_base(t)
             with open("./"+str(self.dut_name)+str(t).split(".")[0]+str(".sv"),"w") as fp:
                 fp.write(content)
-            self.pkg_str=self.pkg_str+str("`include \""+str(self.dut_name)+str(t).split(".")[0]+str(".sv")+"\"\n")
+            if t=="_env_cfg.svh":
+                self.pkg_str=str("`include \""+str(self.dut_name)+str(t).split(".")[0]+str(".sv")+"\"\n")+self.pkg_str
+            else:
+                self.pkg_str=self.pkg_str+str("`include \""+str(self.dut_name)+str(t).split(".")[0]+str(".sv")+"\"\n")
         os.chdir(self.out_dir)
         return
 
@@ -350,9 +358,9 @@ class INTEGRATION(object):
         test_name="TEST_NAME="+str(self.dut_name)+str("_base_test\n")
         mk_str="""
 VPD=+define+DUMP_VPD\nFSDB=+define+DUMP_FSDB
-.PHONY:clean\nclean:\n\t-rm -rf simv* csrc *.h
+.PHONY:clean\nclean:\n\t-rm -rf simv* csrc *.h *.key
 \n.PHONY:cmp\ncmp:\n\tvcs -full64 +v2k -sverilog -f fil.lst -ntb_opts uvm-1.2 -debug_all -timescale=1ns/1ps
-\n.PHONY:run\nrun:\n\t./simv +UVM_TESTNAME=TEST_NAME
+\n.PHONY:run\nrun:\n\t./simv +UVM_TESTNAME=$(TEST_NAME)
 """
         file.write(test_name)
         file.write(mk_str)
