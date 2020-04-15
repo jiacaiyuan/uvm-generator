@@ -1,0 +1,24 @@
+环境特点
+1.DUT的验证环境，agent划分方式灵活，由用户决定
+2.各个agent的内部组成以及通信过程的response的有无均可进行配置
+3.环境中各个monitor由analysis port 引入到env中，并与FIFO相连，便于用于拓展其他components如scoreboard，reference model等
+4.根据agent内部sequencer的个数决定virtual sequencer的使能与连接
+5.对agent以及env的配置有各自的配置类实现，且是层次式的，便于独立与用于拓展和管理
+6.sequence与组件隔离，且各自有对应配置以及全局的配置类
+7.全局的callback
+8.各个组件在env进行配置，封装与整体连接
+9.UVM-RAL以及其perdictor可选择性配置与连接
+
+工具特点
+1.工具自动对UVM各个Components进行TLM的连接
+2.工具自动实现对组件中对应相关配置类的config_db
+3.利用SystemRDL实现UVM-RAL自动生成，根据所处sequencer的不同实现自动挂载
+4.根据配置或DUT的rtl自动产生interface并产生harness，实现自动例化并环境绑定
+5.自动将环境打包，生成Makefile
+6.如存在DUT的rtl会对配置文件进行自动检查与更新
+
+
+if you like the project
+Please pick the star ^_^
+
+（#￣▽￣#）

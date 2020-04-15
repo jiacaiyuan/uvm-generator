@@ -157,7 +157,9 @@ for t in global_template_list:
     response=agent.response,
     UVM_RAL=UVM_RAL,
     agt_list=render_agent_list,
-    ral=agent.ral.render_reg()
+    ral=agent.ral.render_reg(),
+    global_clk_rst=[],
+    global_port_list=[]
     )
     with open("./"+str(MODULE)+str(t).split(".")[0]+str(".sv"),"w") as fp:
         fp.write(content)

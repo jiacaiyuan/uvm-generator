@@ -1,3 +1,4 @@
+test:agent_test config_test integrate_test
 agent_test:
 	python3 agent_test.py
 config_test:
