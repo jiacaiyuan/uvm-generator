@@ -32,7 +32,7 @@ wire {{port.bit_info}} {{port.name}};
 
 //instance dut
 {{MODULE}} u_{{MODULE}}(
-{%for port in global_port_list%}
+{%for port in global_clk_rst+global_port_list%}
 	.{{port.name}}({{port.name}})
 	{%-if not loop.last-%},{%endif%}
 {%-endfor%}
